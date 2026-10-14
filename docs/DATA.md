@@ -7,7 +7,7 @@
 
 1. `shared/config.example.json` を `shared/config.local.json` にコピーします。
 2. `mode` を `local` にします。
-3. 各科目の `apps/<科目>/data/words.json` をご自身で用意します。
+3. 学習画面の `apps/study/data/content.json` をご自身で用意します。
 
 これらの設定ファイルと `data/` はGitの管理対象外です。
 
@@ -16,7 +16,7 @@
 | フィールド | 形式 | 条件 |
 | --- | --- | --- |
 | `schemaVersion` | 数値 | `1` |
-| `words` | 配列 | 6〜10,000項目。6択の選択肢を作るため最低6項目 |
+| `items` | 配列 | 6〜10,000項目。6択の選択肢を作るため最低6項目 |
 | 各項目 | `[isNew, id, term, meaning]` | 順番に真偽値・数値・文字列・文字列 |
 | `id` | 数値 | 1から始まる連番。配列の順序と一致 |
 | `term` / `meaning` | 文字列 | 空欄不可。各500文字以内。HTMLを含めない |

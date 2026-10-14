@@ -1,9 +1,8 @@
 {
   "mode": "local",
-  "datasets": {
-    "english": "data/words.json",
-    "kobun": "data/words.json"
-  },
+  "datasetUrl": "data/content.json",
+  "courseId": "learning",
+  "speechLanguage": "ja-JP",
   "hubUrl": "https://identity.example.invalid",
   "adminEmails": [],
   "adminUids": []
