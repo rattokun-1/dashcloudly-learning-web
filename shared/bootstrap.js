@@ -1,5 +1,5 @@
 (async()=>{
- const shared=new URL('../../shared/',location.href),subject=document.documentElement.dataset.subject==='english'?'english':'kobun';
+ const shared=new URL('../../shared/',location.href),subject='learning';
  const script=src=>new Promise((resolve,reject)=>{const tag=document.createElement('script');tag.src=src;tag.onload=resolve;tag.onerror=()=>reject(Error('プログラムを読み込めませんでした。'));document.head.append(tag);});
  const read=async(url,optional=false)=>{const r=await fetch(url,{cache:'no-store',signal:AbortSignal.timeout(10000)});if(optional&&r.status===404)return null;if(!r.ok)throw Error('設定または教材を読み込めませんでした。');return r.json();};
  try{
@@ -8,9 +8,9 @@
   catch(error){if(localStorage.getItem('dashcloudly-public-mode')&&localStorage.getItem('dashcloudly-public-mode')!=='demo')throw error;config={};}
   const mode=['demo','local','connected'].includes(config.mode)?config.mode:'demo';
   localStorage.setItem('dashcloudly-public-mode',mode);
-  window.DASHCLOUDLY_CONFIG={...config,mode,subject};
+  window.DASHCLOUDLY_CONFIG={...config,mode,subject:config.courseId||subject};
   const transition=!!document.body.dataset.ssoPage||location.pathname.endsWith('logout-relay.html');
-  if(!transition){await script('assets/js/startup.js');const content=await import(new URL('data-loader.mjs',shared));window.DASHCLOUDLY_CONTENT=mode==='demo'?content.demoContent(subject):content.validateContent(await read(new URL(config.datasets?.[subject]||'data/words.json',location.href)));}
+  if(!transition){await script('assets/js/startup.js');const content=await import(new URL('data-loader.mjs',shared));window.DASHCLOUDLY_CONTENT=mode==='demo'?content.demoContent():content.validateContent(await read(new URL(config.datasetUrl||'data/content.json',location.href)));}
   if(mode==='connected'){
    if(!config.firebase?.apiKey||!config.firebase.projectId||!config.hubUrl)throw Error('接続用のFirebase設定と学習ID URLが必要です。');
    const hub=new URL(config.hubUrl);if(hub.protocol!=='https:'&&hub.hostname!=='localhost')throw Error('学習IDの接続先にはHTTPSを指定してください。');

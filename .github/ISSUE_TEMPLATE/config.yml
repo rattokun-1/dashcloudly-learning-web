@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 相談・アイデア
+    url: https://github.com/rattokun-1/dashcloudly-learning-web/discussions
+    about: 実装前の相談や使い方の質問はこちら
+  - name: 脆弱性の非公開報告
+    url: https://github.com/rattokun-1/dashcloudly-learning-web/security/advisories/new
+    about: 脆弱性は公開Issueへ載せないでください
