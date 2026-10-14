@@ -1,7 +1,7 @@
 {
-  "name": "dashcloudly-learning-web",
-  "version": "0.1.0",
-  "private": true,
+  "name": "@rattokun-1/dashcloudly-learning-web",
+  "version": "26.10.1",
+  "private": false,
   "type": "module",
   "license": "MIT",
   "engines": {
@@ -11,5 +11,28 @@
     "start": "node tools/dev-server.mjs",
     "test": "node --test tests/*.test.mjs",
     "audit:public": "node tools/audit-public.mjs"
-  }
+  },
+  "description": "汎用学習Webアプリケーション — Cloudly Glassy 1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rattokun-1/dashcloudly-learning-web.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "files": [
+    "index.html",
+    "apps/study/",
+    "shared/",
+    "tools/",
+    "tests/",
+    "docs/",
+    "LICENSE",
+    "README.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "CODE_OF_CONDUCT.md",
+    "!**/data/**",
+    "!shared/config.local.json"
+  ]
 }
