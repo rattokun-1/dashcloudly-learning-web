@@ -44,7 +44,9 @@ npm start
 | Local | 自分の教材を読み込み、ブラウザー内で学習します |
 | Connected | 自分の認証・同期基盤に接続。別途サーバー実装と認可の設定が必要です |
 
-[導入ガイド](docs/SETUP.md)・[教材の形式](docs/DATA.md)
+自分のサイトとして使う場合は `npm run configure` で設定ファイルを作成します。サイト名・アイコン・学習設定・項目をコード編集なしで変更できます。
+
+[設定方法](docs/CONFIGURATION.md)・[導入ガイド](docs/SETUP.md)・[教材の形式](docs/DATA.md)
 
 ## 一緒に作る
 

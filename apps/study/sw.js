@@ -1,10 +1,11 @@
 /* 学習 PWA Service Worker */
-const CACHE_VERSION = 'public-source-v1';
+const CACHE_VERSION = 'public-source-v26.10.2';
 const CACHE_NAME = 'systan-master-' + CACHE_VERSION;
 
 const APP_SHELL = [
   '../../shared/bootstrap.js',
   '../../shared/data-loader.mjs',
+  '../../shared/site-config.mjs',
   '../../shared/demo-runtime.mjs',
   './',
   './index.html',

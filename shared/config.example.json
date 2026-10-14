@@ -1,5 +1,16 @@
 {
   "mode": "local",
+  "site": {
+    "name": "マイ学習サイト",
+    "description": "自分の教材で学べるサイト",
+    "icon": "../apps/study/assets/icons/dashcloudly.svg"
+  },
+  "learning": {
+    "setSize": 50,
+    "questionCount": 10,
+    "mode": 1,
+    "autoVoice": false
+  },
   "datasetUrl": "data/content.json",
   "courseId": "learning",
   "speechLanguage": "ja-JP",
