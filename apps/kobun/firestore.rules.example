@@ -1,0 +1,130 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null
+        && !exists(/databases/$(database)/documents/deletedAccounts/$(request.auth.uid))
+        && (!exists(/databases/$(database)/documents/sessionRevocations/$(request.auth.uid))
+          || request.auth.token.auth_time > get(/databases/$(database)/documents/sessionRevocations/$(request.auth.uid)).data.revokedAtSeconds);
+    }
+
+    function learningConsent() {
+      return signedIn()
+        && (!exists(/databases/$(database)/documents/serviceConfiguration/legal)
+          || (exists(/databases/$(database)/documents/legalConsents/$(request.auth.uid))
+            && get(/databases/$(database)/documents/legalConsents/$(request.auth.uid)).data.version
+              == get(/databases/$(database)/documents/serviceConfiguration/legal).data.requiredVersion));
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email == 'admin@example.invalid';
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isTeacher() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'teacher'
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('schoolCode', null) != null;
+    }
+
+    function ownerCannotChangeAdminFields() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        'role',
+        'schoolCodeUpdatedAt',
+        'disabledInApp',
+        'disabledUpdatedByUid',
+        'disabledUpdatedByEmail',
+        'disabledUpdatedAt',
+        'note',
+        'updatedByUid',
+        'updatedByEmail'
+      ]);
+    }
+
+    function ownerCanChangeSchoolCode() {
+      return request.resource.data.get('schoolCode', null) == resource.data.get('schoolCode', null);
+    }
+
+    function ownerCreateSafe() {
+      return !request.resource.data.keys().hasAny([
+        'role',
+        'schoolCodeUpdatedAt',
+        'disabledInApp',
+        'disabledUpdatedByUid',
+        'disabledUpdatedByEmail',
+        'disabledUpdatedAt',
+        'note',
+        'updatedByUid',
+        'updatedByEmail'
+      ]);
+    }
+
+    // 全体設定・メンテナンス設定：閲覧は全員、変更は管理者のみ。
+    match /appSettings/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // 学校・クラス参加コード：参加コードを知る利用者は単一コードを確認可。
+    // 一覧取得・発行・停止・削除は管理者のみ。
+    match /schoolCodes/{code} {
+      allow get: if isAdmin() || (signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('schoolCode',null)==code);
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // クラスごとの出題範囲。IDを持つ生徒は閲覧、編集は管理者のみ。
+    match /schoolCodes/{schoolId}/classes/{classId} {
+      allow get: if isAdmin() || (signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('schoolCode',null)==schoolId);
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ユーザープロフィール。
+    // 本人は通常プロフィールのみ変更可。role / disabledInApp / note は管理者のみ変更可。
+    // 先生は所属学校のプロフィールだけ閲覧可能。
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isAdmin() || (isOwner(uid) && ownerCreateSafe() && request.resource.data.get('schoolCode', null) == null);
+      allow update: if isAdmin() || (isOwner(uid)
+        && ownerCannotChangeAdminFields()
+        && ownerCanChangeSchoolCode()
+        && request.resource.data.get('schoolName',null)==resource.data.get('schoolName',null)
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['appState','kobunAppState','appStateUpdatedAt','kobunAppStateUpdatedAt','totalCorrect']) || learningConsent()));
+      allow delete: if isAdmin();
+    }
+
+    function rankingSchoolMatches() {
+      return learningConsent()
+        && request.resource.data.keys().hasOnly(['uid', 'nickname', 'totalCorrect', 'schoolCode', 'updatedAt'])
+        && request.resource.data.get('uid', null) == request.auth.uid
+        && request.resource.data.get('nickname', null) is string
+        && request.resource.data.nickname.size() > 0
+        && request.resource.data.nickname.size() <= 16
+        && request.resource.data.get('totalCorrect', null) is int
+        && request.resource.data.totalCorrect >= 0
+        && request.resource.data.get('updatedAt', null) is timestamp
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && request.resource.data.get('schoolCode', null) == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('schoolCode', null);
+    }
+
+    // Legacy cumulative rankings are kept for operator migration only.
+    // Weekly/cohort ranking is served by the authenticated broker API.
+    match /rankings/{uid} {
+      allow read, write: if isAdmin();
+    }
+    match /rankingsKobun/{uid} {
+      allow read, write: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
