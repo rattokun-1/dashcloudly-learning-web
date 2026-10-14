@@ -60,3 +60,5 @@ npm start
 プログラムは [MIT](LICENSE) です。利用・改良・再配布できます。名称・ロゴは対象外です。[ブランドの扱い](docs/BRAND.md)を確認してください。教材の権利は各権利者に帰属し、本ライセンスでは利用許諾されません。
 
 教材・秘密情報の混入をCIで検査します。[公開ポリシー](docs/PUBLICATION.md)に従い、画像やPRにも実データを含めないでください。脆弱性は [非公開の報告窓口](SECURITY.md)へ。
+
+[配布版とパッケージ](docs/RELEASES.md) · [最新Release](https://github.com/rattokun-1/dashcloudly-learning-web/releases/latest)

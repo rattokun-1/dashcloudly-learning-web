@@ -1,0 +1,7 @@
+**/data/
+shared/config.local.json
+.env*
+*.pem
+*.key
+*.tgz
+*.zip
