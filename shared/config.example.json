@@ -1,0 +1,10 @@
+{
+  "mode": "local",
+  "datasets": {
+    "english": "data/words.json",
+    "kobun": "data/words.json"
+  },
+  "hubUrl": "https://identity.example.invalid",
+  "adminEmails": [],
+  "adminUids": []
+}
