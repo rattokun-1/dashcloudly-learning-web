@@ -229,7 +229,7 @@ const ITEMS = ITEMS_RAW.map(([isNew, id, term, answer]) => ({ isNew, id, term, a
 const ITEM_MAP = {};
 ITEMS.forEach(w => ITEM_MAP[w.id] = w);
 
-const SET_SIZE = 50;
+const SET_SIZE = window.DASHCLOUDLY_CONFIG.learning.setSize;
 const WRONG_THRESHOLD = 10;
 const TOTAL_SETS = Math.ceil(ITEMS.length / SET_SIZE);
 
@@ -239,13 +239,13 @@ const TOTAL_SETS = Math.ceil(ITEMS.length / SET_SIZE);
 let progress = {}; // wordId → { q1, q2, q3 }
 let bookmarks = new Set(); // bookmarked wordIds
 let currentSetIdx = 0;
-let selectedMode = 1;
+let selectedMode = window.DASHCLOUDLY_CONFIG.learning.mode;
 let selectedRetest = 'all'; // 'all' | 'mix' | 'circle' | 'cross' | 'bookmark'
 let selectedBmMode = 1;    // mode selector for bookmark screen
 let selectedBmFilter = 'all'; // 'all' | 'bm' | 'wrong'
-let normalQuizCount = 10;
+let normalQuizCount = window.DASHCLOUDLY_CONFIG.learning.questionCount;
 let setQuizRanges = {}; // setIdx -> { startId, endId }
-let bookmarkQuizCount = 10;
+let bookmarkQuizCount = window.DASHCLOUDLY_CONFIG.learning.questionCount;
 let quiz = null;
 
 // =========================================================
@@ -253,7 +253,7 @@ let quiz = null;
 // =========================================================
 const VOICE_AUTO_KEY = 'dashcloudly_learning_voice_auto_enabled';
 function isVoiceSupported() { return typeof window !== 'undefined' && 'speechSynthesis' in window; }
-function isAutoVoiceEnabled() { return localStorage.getItem(VOICE_AUTO_KEY) === '1'; }
+function isAutoVoiceEnabled() { const saved=localStorage.getItem(VOICE_AUTO_KEY);return saved===null?window.DASHCLOUDLY_CONFIG.learning.autoVoice:saved==='1'; }
 function setAutoVoiceEnabled(enabled) {
   localStorage.setItem(VOICE_AUTO_KEY, enabled ? '1' : '0');
   renderAccountSettings && renderAccountSettings();
@@ -604,7 +604,7 @@ function renderSchoolBranding() {
     title.innerHTML = `<img class="school-brand-logo" src="${logo}" alt="${escapeHtml(getSchoolName() || '学校ロゴ')}">`;
     title.setAttribute('aria-label', getSchoolName() || '学校ロゴ');
   } else {
-    title.textContent = '学習';
+    title.textContent = window.DASHCLOUDLY_CONFIG.site.name;
     title.removeAttribute('aria-label');
   }
 }
@@ -3931,7 +3931,7 @@ async function installPwaApp() {
     document.body.classList.toggle('is-quiz-active', id === 'screen-quiz');
     $$('.screen').forEach(s => s.setAttribute('aria-hidden', s === active ? 'false' : 'true'));
     const map = { 'screen-home':'学習', 'screen-set':'学習セット', 'screen-quiz':'クイズ中', 'screen-bookmark':'マイリスト', 'screen-ranking':'ランキング', 'screen-account':'アカウント設定', 'screen-result':'結果' };
-    if (map[id]) document.title = `${map[id]} | 学習`;
+    if (map[id]) document.title = id==='screen-home'?window.DASHCLOUDLY_CONFIG.site.name:`${map[id]} | ${window.DASHCLOUDLY_CONFIG.site.name}`;
   }
 
   function installBackToTop(){
