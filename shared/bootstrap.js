@@ -17,7 +17,7 @@
    for(const name of ['app','auth','firestore'])await script('https://www.gstatic.com/firebasejs/10.12.0/firebase-'+name+'-compat.js');
   }else{const {installLocalRuntime}=await import(new URL('demo-runtime.mjs',shared));installLocalRuntime();}
   if(location.pathname.endsWith('logout-relay.html')){await script('assets/js/logout-relay.js');return;}
-  if(transition){await script('assets/js/sso-client.js');return;}
+  if(transition){firebase.initializeApp(window.DASHCLOUDLY_CONFIG.firebase||{projectId:'local-demo'});await script('assets/js/sso-client.js');return;}
   for(const name of ['app','sso-client','learning-compliance','results-dashboard'])await script('assets/js/'+name+'.js');
   if(mode==='demo'){const note=document.createElement('p');note.className='public-demo-notice';note.textContent='UIデモ · 教材データなし';note.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);margin:0;padding:3px 12px;z-index:2200;border-radius:0 0 10px 10px;background:#25272b;color:#fff;font:10px system-ui;pointer-events:none';document.body.append(note);}
  }catch(error){window.dashcloudlyStartup?.error(error.message);const status=document.getElementById('loading-screen')||document.getElementById('sso-message')||document.getElementById('status');if(status){status.style.display='flex';status.textContent=error.message;}console.error(error);}

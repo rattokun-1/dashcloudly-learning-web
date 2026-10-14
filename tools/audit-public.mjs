@@ -8,6 +8,7 @@ export function inspectText(name,text){
   ['embedded vocabulary rows',/\[\s*(?:true|false)\s*,\s*\d+\s*,\s*["']/],
   ['embedded vocabulary array',/const\s+WORDS_RAW\s*=\s*\[/],
   ['embedded pronunciation dictionary',/const\s+PHONETICS\s*=\s*\{\s*["']/],
+  ['inline Firebase application identifier',/1:\d+:web:[a-f0-9]+/],
   ['Firebase production key',/AIza[A-Za-z0-9_-]{30,}/],
   ['personal Google address',/[A-Za-z0-9._%+-]+@gmail\.com/i],
   ['production project',new RegExp(['systan','app','v6'].join('-'))],
