@@ -1534,7 +1534,7 @@ function renderSchoolCodeSettings() {
           <button type="button" class="btn btn-primary" onclick="saveClassTestRange()">このクラスの範囲を保存</button>
         </div>
         <div class="admin-dashboard-card">
-          
+
           <div id="admin-dashboard-body" class="admin-dashboard-body"></div>
         </div>
       ` : `
@@ -2766,7 +2766,7 @@ function renderQuestion() {
     const choices = buildMode1Choices(word);
     quiz.choices = choices;
     container.innerHTML = '';
-    
+
     const grid = document.createElement('div');
     grid.className = 'choices';
     grid.id = 'mode1-choices-grid';
@@ -2809,7 +2809,7 @@ function renderQuestion() {
     qPrompt.textContent = 'この意味に対応する英単語を書いてください（自動採点）';
     qSub.textContent = '';
     container.innerHTML = `
-      <input type="text" class="answer-input" id="free-answer" placeholder="英語で入力..." 
+      <input type="text" class="answer-input" id="free-answer" placeholder="英語で入力..."
         onkeydown="if(event.key==='Enter')gradeTypedAnswer()" autocomplete="off" autocapitalize="none" spellcheck="false">
       <button class="confirm-btn" onclick="gradeTypedAnswer()">採点する</button>
     `;
@@ -3022,7 +3022,7 @@ function nextQuestion() {
 function finishQuiz() {
   const correct = quiz.results.filter(r => r.correct).length;
   const wrong = quiz.results.length - correct;
-  
+
   const titleEl = document.getElementById('result-title');
   const subEl = document.getElementById('result-sub');
   const statsEl = document.getElementById('result-stats');
@@ -3031,7 +3031,7 @@ function finishQuiz() {
   const typeLabel = { normal: '通常クイズ', review: '復習テスト', bookmark: '★ブックマーク' }[quiz.type];
   titleEl.textContent = `${typeLabel}完了！`;
   subEl.textContent = `全${quiz.results.length}問`;
-  
+
   statsEl.innerHTML = `
     <div class="result-stat-item correct">
       <div class="result-stat-num">${correct}</div>

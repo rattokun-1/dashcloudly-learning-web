@@ -679,9 +679,9 @@ html, body { height: 100%; font-family: 'Noto Serif JP', serif; background: var(
 }
 
 /* ボタン類のクリック時リアクション */
-.btn:active:not(:disabled), 
-.confirm-btn:active, 
-.back-btn:active, 
+.btn:active:not(:disabled),
+.confirm-btn:active,
+.back-btn:active,
 .choice-btn:active:not(:disabled) {
   transform: scale(0.96);
 }
