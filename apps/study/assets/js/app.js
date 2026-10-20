@@ -2204,6 +2204,8 @@ function scrollQuizToTop() {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }));
   });
+  document.body.scrollTop = 0;
+  document.documentElement.scrollTop = 0;
 }
 
 function relocateDashboardPanels() {
@@ -4218,7 +4220,8 @@ function initOfflineSupportUI() {
 /* Study Dashboard UI placeholder */
 
 function getAccountIconMarkup() {
-  const source = (validProfileAvatar(profileAvatarData)?profileAvatarData:'') || 'assets/icons/dashcloudly.svg';
+  const source = validProfileAvatar(profileAvatarData)?profileAvatarData:'';
+  if(!source)return '<svg class="header-person-icon" viewBox="0 0.75 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg>';
   return '<img class="header-account-avatar" src="' + source + '" alt="">';
 }
 function closeAccountPopover(restoreFocus = false) {
@@ -4315,21 +4318,35 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-/* Compact profile control while scrolling or studying. */
+/* Stable compact header: progress and interruption remain directly accessible. */
 (()=>{
- const button=document.createElement('button');button.id='floating-profile-button';button.type='button';button.className='header-account-button floating-profile-button';button.setAttribute('aria-label','ログインプロフィールを開く');button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-expanded','false');button.tabIndex=-1;button.innerHTML=getAccountIconMarkup();button.onclick=()=>toggleAccountPopover();document.body.append(button);
- let compact=false,scheduled=false;
- const update=()=>{scheduled=false;const active=document.querySelector('.screen.active');const scroll=Math.max(window.scrollY,document.body.scrollTop,document.documentElement.scrollTop,active?.scrollTop||0,active?.querySelector('.content')?.scrollTop||0);const previous=compact;const studying=active?.id==='screen-quiz';compact=studying||scroll>(compact?32:72);document.body.classList.toggle('profile-only-header',compact);if(previous!==compact)closeAccountPopover();button.tabIndex=compact?0:-1;button.innerHTML=getAccountIconMarkup();
-  document.querySelectorAll('.screen > .header,.screen > .quiz-header,.role-page-header').forEach(header=>{header.inert=compact;header.setAttribute('aria-hidden',String(compact));});
-  positionAccountPopover();
- };
+ const bar=document.createElement('div');bar.id='compact-study-bar';bar.setAttribute('role','group');bar.setAttribute('aria-label','学習メニュー');
+ const quit=document.createElement('button');quit.type='button';quit.className='compact-study-quit';quit.textContent='中断';quit.onclick=()=>quitQuiz();
+ const expand=document.createElement('button');expand.type='button';expand.className='compact-study-expand';expand.setAttribute('aria-label','メニューバーを広げる');expand.setAttribute('aria-expanded','false');
+ const status=document.createElement('span'),meter=document.createElement('progress');meter.max=100;meter.value=0;meter.setAttribute('aria-label','学習の進捗');expand.append(status,meter);
+ const button=document.createElement('button');button.id='floating-profile-button';button.type='button';button.className='header-account-button';button.setAttribute('aria-label','プロフィールを開く');button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-expanded','false');button.onclick=()=>toggleAccountPopover();bar.append(quit,expand,button);document.body.append(bar);
+ const spaces=new Map();document.querySelectorAll('.screen > .header,.screen > .quiz-header').forEach(header=>{const space=document.createElement('div');space.className='expanded-header-space';space.hidden=true;header.before(space);spaces.set(header,{space,height:header.getBoundingClientRect().height});});
+ let compact=false,scheduled=false,expanded=false,lastScreen=null;
+ const currentScroll=()=>{const active=document.querySelector('.screen.active');return Math.max(window.scrollY,document.body.scrollTop,document.documentElement.scrollTop,active?.scrollTop||0,active?.querySelector('.content')?.scrollTop||0);};
+ expand.onclick=()=>{const active=document.querySelector('.screen.active');const positions=[document.documentElement,document.body,active,active?.querySelector('.content')].filter(Boolean).map(node=>[node,node.scrollTop]);expanded=true;closeAccountPopover();update();requestAnimationFrame(()=>{for(const [node,top] of positions)node.scrollTop=top;});};
+ const update=()=>{scheduled=false;const active=document.querySelector('.screen.active');if(active!==lastScreen){expanded=false;lastScreen=active;}
+ const scroll=currentScroll(),studying=active?.id==='screen-quiz';if(!studying&&scroll<32)expanded=false;
+ if(!document.body.classList.contains('expanded-floating-header'))for(const [header,entry]of spaces){const style=getComputedStyle(header);entry.height=style.display==='none'?0:header.offsetHeight+(parseFloat(style.marginTop)||0)+(parseFloat(style.marginBottom)||0);}
+ for(const [header,entry]of spaces){entry.space.style.height=entry.height+'px';entry.space.hidden=!(expanded&&header.parentElement===active);}
+ const previous=compact;compact=!expanded&&(studying||scroll>(compact?32:88));
+ document.body.classList.toggle('profile-only-header',compact);document.body.classList.toggle('expanded-floating-header',expanded);
+ bar.hidden=!compact;bar.dataset.studying=String(studying);expand.setAttribute('aria-expanded',String(expanded));quit.hidden=!studying;meter.hidden=!studying;
+ const markup=getAccountIconMarkup();if(button.innerHTML!==markup)button.innerHTML=markup;
+ status.textContent=studying?(document.getElementById('quiz-progress-text')?.textContent||'学習中'):(window.DASHCLOUDLY_CONFIG?.site?.name || document.querySelector('.app-header .header-title')?.textContent || document.title);
+ meter.value=parseFloat(document.getElementById('quiz-progress-fill')?.style.width)||0;
+ if(compact&&!previous&&!matchMedia('(prefers-reduced-motion: reduce)').matches)bar.animate([{width:'min(720px, calc(100vw - 24px))',opacity:.6,transform:'translateX(-50%) translateY(-8px)',borderRadius:'22px'},{width:studying?'300px':'220px',opacity:1,transform:'translateX(-50%) translateY(0)',borderRadius:'32px'}],{duration:260,easing:'cubic-bezier(.22,.8,.3,1)'});
+ document.querySelectorAll('.screen > .header,.screen > .quiz-header,.role-page-header').forEach(header=>{header.inert=compact;header.setAttribute('aria-hidden',String(compact));});positionAccountPopover();};
  const queue=()=>{if(!scheduled){scheduled=true;requestAnimationFrame(update);}};
- addEventListener('scroll',queue,{passive:true,capture:true});
- const observer=new MutationObserver(queue);document.querySelectorAll('.screen').forEach(screen=>observer.observe(screen,{attributes:true,attributeFilter:['class']}));
- update();
+ const collapse=()=>{if(expanded){expanded=false;queue();}};addEventListener('wheel',collapse,{passive:true});addEventListener('touchmove',collapse,{passive:true});
+ addEventListener('keydown',event=>{if(event.key==='Escape'&&expanded){expanded=false;update();expand.focus({preventScroll:true});}else if(['PageDown','PageUp','Home','End'].includes(event.key))collapse();});addEventListener('scroll',queue,{passive:true,capture:true});
+ const root=document.getElementById('app');if(root)new MutationObserver(queue).observe(root,{subtree:true,attributes:true,attributeFilter:['class']});
+ const progress=document.getElementById('quiz-progress-text'),fill=document.getElementById('quiz-progress-fill');if(progress)new MutationObserver(queue).observe(progress,{childList:true,subtree:true});if(fill)new MutationObserver(queue).observe(fill,{attributes:true,attributeFilter:['style']});update();
 })();
-
-(()=>{const progressLabel=document.getElementById('quiz-progress-text'),progressFill=document.getElementById('quiz-progress-fill');if(!progressLabel||!progressFill)return;const hud=document.createElement('div');hud.className='lesson-glass-hud';hud.setAttribute('aria-label','学習の進捗と中断');hud.innerHTML='<button type="button" onclick="quitQuiz()">中断</button><div class="lesson-glass-status"><span id="lesson-glass-count"></span><div class="lesson-glass-track" role="progressbar" aria-label="学習の進捗" aria-valuemin="0" aria-valuemax="100"><i></i></div></div>';document.body.append(hud);const update=()=>{const label=document.getElementById('quiz-progress-text'),fill=document.getElementById('quiz-progress-fill');document.getElementById('lesson-glass-count').textContent=label?.textContent||'';const width=fill?.style.width||'0%';hud.querySelector('i').style.width=width;hud.querySelector('[role="progressbar"]').setAttribute('aria-valuenow',String(parseFloat(width)||0));};const observer=new MutationObserver(update);observer.observe(progressLabel,{childList:true,characterData:true,subtree:true});observer.observe(progressFill,{attributes:true,attributeFilter:['style']});update();})();
 
 // Move the existing controls, preserving their IDs, state and keyboard handlers.
 (function installMobileStudyDock(){
