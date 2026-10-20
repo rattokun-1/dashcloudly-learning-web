@@ -1,5 +1,5 @@
 /* 学習 PWA Service Worker */
-const CACHE_VERSION = 'public-source-v26.10.2';
+const CACHE_VERSION = '20261020-compact-header-v1';
 const CACHE_NAME = 'systan-master-' + CACHE_VERSION;
 
 const APP_SHELL = [
