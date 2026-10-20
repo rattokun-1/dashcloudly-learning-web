@@ -1,5 +1,5 @@
 /* 学習 PWA Service Worker */
-const CACHE_VERSION = '20261020-compact-header-v1';
+const CACHE_VERSION = '20261020-keyboard-fixes-v1';
 const CACHE_NAME = 'systan-master-' + CACHE_VERSION;
 
 const APP_SHELL = [

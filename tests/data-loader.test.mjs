@@ -13,3 +13,21 @@ test('private imports require bounded, sequential, plain-text records',()=>{
  assert.throws(()=>validateContent(unsafe));
  const duplicate=structuredClone(data);duplicate.items[1][1]=1;assert.throws(()=>validateContent(duplicate));
 });
+
+for (const [field,column] of [['term',2],['answer',3]]) {
+ for (const length of [500,501]) {
+  test(`${field}: generated ${length}-character boundary`,()=>{
+   const data={schemaVersion:1,...demoContent(6)};
+   data.items[0][column]='あ'.repeat(length);
+   if(length===500)assert.equal(validateContent(data).items[0][column].length,length);
+   else assert.throws(()=>validateContent(data));
+  });
+ }
+}
+for(const length of [100,101]) {
+ test(`phonetics: generated ${length}-character boundary`,()=>{
+  const data={schemaVersion:1,...demoContent(6),phonetics:{generated:'あ'.repeat(length)}};
+  if(length===100)assert.equal(validateContent(data).phonetics.generated.length,length);
+  else assert.throws(()=>validateContent(data));
+ });
+}

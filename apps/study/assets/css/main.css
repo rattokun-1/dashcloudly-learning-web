@@ -6278,3 +6278,6 @@ body.expanded-floating-header #screen-quiz.active > .quiz-progress-bar .quiz-pro
 
 
 .header-account-button:has(> .header-person-icon){display:flex;align-items:center;justify-content:center}.header-account-button > .header-person-icon{flex:0 0 24px;width:24px;height:24px;margin:0;align-self:center}
+
+/* Visible keyboard focus after question and answer transitions. */
+#choices-container .choice-btn:focus-visible,#next-btn:focus-visible,#free-answer:focus-visible{outline:2px solid var(--text);outline-offset:4px}

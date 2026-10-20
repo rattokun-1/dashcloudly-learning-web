@@ -2359,12 +2359,28 @@ function selectBmMode(m) {
   });
 }
 
+// Focus after rendering, without stealing a newer interaction or an open dialog.
+let studyFocusRequest = 0;
+function focusStudyControl(selector, screen = 'screen-quiz') {
+  const request = ++studyFocusRequest;
+  const previous = document.activeElement;
+  requestAnimationFrame(() => {
+    if (request !== studyFocusRequest || document.querySelector('.screen.active')?.id !== screen || document.querySelector('dialog[open]')) return;
+    const target = document.querySelector(selector);
+    const active = document.activeElement;
+    if (!target || target.disabled || !target.getClientRects().length || target.closest('[inert]')) return;
+    if (active !== previous && active !== document.body && active !== target) return;
+    target.focus({ preventScroll: true });
+  });
+}
+
 function quitQuiz() {
   if (confirm('クイズを中断しますか？進捗は保存されます。')) {
     if (quiz && quiz.type === 'bookmark') {
       showBookmarks();
     } else {
       showSet(currentSetIdx);
+      focusStudyControl('#btn-start-quiz', 'screen-home');
     }
   }
 }
@@ -2823,6 +2839,7 @@ function renderQuestion() {
     voiceButton.title = label;
     voiceButton.setAttribute('aria-label', label);
   }
+  focusStudyControl(quiz.mode === 3 ? '#free-answer' : '#choices-container .choice-btn');
 }
 
 function handleMode1Choice(idx) {
@@ -2844,7 +2861,6 @@ function handleMode1Choice(idx) {
   flashResult(isCorrect);
   advanceProgress(word.id, resultStatus, 'q1');
   showNextBtn(isCorrect);
-  setTimeout(()=>{ const nb=document.getElementById('next-btn'); if(nb){ nb.style.display='block'; nb.classList.add('is-visible'); } },120);
 }
 
 function handleMode2Choice(idx) {
@@ -2981,6 +2997,7 @@ function showNextBtn(isCorrect) {
     btn.textContent = isCorrect ? '✓ 次の問題へ →' : '✗ 次の問題へ →';
   }
   btn.className = 'next-btn is-visible ' + (isCorrect ? 'correct-next' : 'wrong-next'); btn.style.display='block';
+  focusStudyControl('#next-btn');
 }
 
 function skipUnknownQuestion() {
@@ -3953,8 +3970,9 @@ async function installPwaApp() {
     if (window.__fullUiShortcutsReady) return;
     window.__fullUiShortcutsReady = true;
     document.addEventListener('keydown', ev => {
+      if (ev.defaultPrevented || ev.repeat || ev.ctrlKey || ev.altKey || ev.metaKey) return;
       const tag = (ev.target && ev.target.tagName || '').toLowerCase();
-      const typing = tag === 'input' || tag === 'textarea' || ev.isComposing;
+      const typing = tag === 'input' || tag === 'textarea' || tag === 'select' || ev.target?.isContentEditable || ev.isComposing;
       const activeId = $('.screen.active')?.id || '';
       if (activeId === 'screen-quiz') {
         if (!typing && /^[1-6]$/.test(ev.key)) {
@@ -3965,7 +3983,7 @@ async function installPwaApp() {
           const bm = $('#quiz-bm-btn');
           if (bm) { ev.preventDefault(); bm.click(); toast('ブックマークを切り替えました'); }
         }
-        if (!typing && ev.key === 'Enter') {
+        if (!typing && ev.key === 'Enter' && !ev.target?.closest('button,a[href],summary,[role=button],[role=link]')) {
           const next = $('.next-btn[style*="block"], .next-btn:not([style*="display: none"])');
           const confirm = $('.confirm-btn');
           if (next && getComputedStyle(next).display !== 'none') { ev.preventDefault(); next.click(); }
