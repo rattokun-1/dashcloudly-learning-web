@@ -20,3 +20,4 @@ backups/
 *.log
 .DS_Store
 Thumbs.db
+security-reports/

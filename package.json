@@ -11,6 +11,7 @@
     "start": "node tools/dev-server.mjs",
     "test": "node --test tests/*.test.mjs",
     "audit:public": "node tools/audit-public.mjs",
+    "security:check": "node tools/security-check.mjs",
     "configure": "node tools/setup.mjs"
   },
   "description": "汎用学習Webアプリケーション — Cloudly Glassy 1.0",
